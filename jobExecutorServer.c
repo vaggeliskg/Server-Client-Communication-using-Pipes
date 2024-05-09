@@ -7,9 +7,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <semaphore.h>
+#include "queue.h"
 
 
-#define FIFO_FILE "jobCommanderToServer"
+#define FIFO_FILE "myfifo"
 #define SERVER_FILE "jobExecutorServer.txt"
 #define SEM_NAME "/server_ready"
 
@@ -22,13 +23,6 @@ void signal_handler(int signum) {
 }
 
 int main(int argc, char *argv[]) {
-    signal(SIGCONT,signal_handler);
-
-    sem_t *sem = sem_open(SEM_NAME, O_CREAT, 0666, 0);
-    if (sem == SEM_FAILED) {
-        perror("sem_open");
-        exit(EXIT_FAILURE);
-    }
 
     // Get the process ID (PID) of the server
     printf("Server is Turning on\n");
@@ -46,9 +40,18 @@ int main(int argc, char *argv[]) {
     snprintf(pid_str, sizeof(pid_str), "%d", server_pid);
     
     // Write the PID to the file
-    ssize_t bytes_written = write(sf, pid_str, strlen(pid_str));
+    write(sf, pid_str, strlen(pid_str));
     close(sf);
 
+
+
+    sem_t *sem = sem_open(SEM_NAME, O_CREAT, 0666, 0);
+    if (sem == SEM_FAILED) {
+        perror("sem_open");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("about to send\n");
 
 
     // Signal the semaphore to indicate that the server is ready
@@ -56,11 +59,11 @@ int main(int argc, char *argv[]) {
         perror("sem_post");
         exit(EXIT_FAILURE);
     }
-    
+    printf("about to send\n");
     // Close the semaphore
     sem_close(sem);
 
-
+    signal(SIGCONT,signal_handler);
 
     while(1) {
         while (signal_received == 0) {

@@ -1,0 +1,10 @@
+# Αγνοούμε όλα τα αρχεία (όχι τα directories)
+*
+!*/
+
+# Εκτός από τα παρακάτω
+!*.c
+!*.h
+!Makefile
+!.gitignore
+!.vscode/*.json

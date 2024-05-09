@@ -7,12 +7,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <semaphore.h>
+#include <errno.h>
 
 #define MAXLEN 400
-#define FIFO_FILE "jobCommanderToServer"
+#define FIFO_FILE "myfifo"
 #define SERVER_FILE "jobExecutorServer.txt"
 #define SEM_NAME "/server_ready"
-
 
 
 int isServerActive() {
@@ -24,15 +24,37 @@ int isServerActive() {
     return 0; // Server is not active
 }
 
+int isPipeActive() {
+    int fd3 = open(FIFO_FILE, O_RDONLY | O_NONBLOCK);
+    if (fd3 != -1) {
+        close(fd3);
+        return 1; // Server is active
+    }
+    return 0; // Server is not active
+}
 
 
 
 int main(int argc, char *argv[]) {
-
+    sem_t *sem;
     if (isServerActive()) {
+            sem = sem_open(SEM_NAME, O_CREAT, 0666, 1); 
+            if (sem == SEM_FAILED) {
+                perror("sem_open");
+                exit(EXIT_FAILURE);
+            }
+            if (sem_post(sem) == -1) {
+                perror("sem_post");
+                exit(EXIT_FAILURE);
+            }
             printf("jobExecutorServer is active.\n");
     } else {
     // Start the server using a shell command
+        sem = sem_open(SEM_NAME, O_CREAT, 0666, 0);
+        if (sem == SEM_FAILED) {
+            perror("sem_open");
+            exit(EXIT_FAILURE);
+        }
         int result = fork();
         if( result == 0 ) {
             execl("./jobExecutorServer", "./jobExecutorServer", NULL);
@@ -44,16 +66,57 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
     }
+    //sleep(1);
+      
+    printf("Waiting for server...\n");
+    if (sem_wait(sem) == -1) {
+        perror("sem_wait");
+        exit(EXIT_FAILURE);
+    }
+    printf("Server ready!\n");
+
+    sem_close(sem);
     
-    // Wait for a brief moment to ensure the server has started
-   // sleep(1);
-    // Create the named pipe
-    if (mkfifo(FIFO_FILE, 0666) == -1) {
-        perror("Error creating named pipe");
-        exit(1);
+    // create named pipe 
+
+    printf("im here\n");
+    
+
+
+    if(isPipeActive()) {
+        printf("Named pipe '%s' already exists.\n", FIFO_FILE);
+    }
+    else {
+        if (mkfifo(FIFO_FILE, 0666) == -1) {
+                perror("Error creating named pipe");
+                exit(EXIT_FAILURE);
+            }
+            printf("Named pipe '%s' created successfully.\n", FIFO_FILE);
     }
 
-    printf("Named pipe created successfully\n");
+    // int pipe = open(FIFO_FILE, O_RDONLY);
+
+    // // Check if the open() call failed
+    // if (pipe == -1) {
+    //     // Check if the error is due to file not existing
+    //     if (errno == ENOENT) {
+    //         // File does not exist, create the named pipe
+    //         if (mkfifo(FIFO_FILE, 0666) == -1) {
+    //             perror("Error creating named pipe");
+    //             exit(EXIT_FAILURE);
+    //         }
+    //         printf("Named pipe '%s' created successfully.\n", FIFO_FILE);
+    //     } else {
+    //         // Other error occurred during open()
+    //         perror("Error opening file");
+    //         exit(EXIT_FAILURE);
+    //     }
+    // } else {
+    //     // File already exists, close the file descriptor
+    //     close(pipe);
+    //     printf("Named pipe '%s' already exists.\n", FIFO_FILE);
+    // }
+
 
 
     if (argc < 2) {
@@ -96,24 +159,12 @@ int main(int argc, char *argv[]) {
         printf("Unknown command: %s\n", argv[1]);
         exit(1);
     }
-    sem_t *sem = sem_open(SEM_NAME, O_CREAT, 0666, 0);
-    if (sem == SEM_FAILED) {
-        perror("sem_open");
-        exit(EXIT_FAILURE);
-    }
-      
-    printf("Waiting for server...\n");
-    if (sem_wait(sem) == -1) {
-        perror("sem_wait");
-        exit(EXIT_FAILURE);
-    }
-    printf("Server ready!\n");
 
     // read server pid
 
     int sf = open(SERVER_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
     if (sf == -1) {
-        perror("Failed to open SERVER_FILE");
+        perror("Fuck... failed to open SERVER_FILE");
         exit(EXIT_FAILURE);
     }
 
@@ -131,7 +182,6 @@ int main(int argc, char *argv[]) {
     pid_t server_pid = atoi(pid_str);
     printf("Server PID: %d\n", server_pid);
 
-    sem_close(sem);
     
     char buf[MAXLEN]; //Create a string containing all the arguments passed, to write in pipe
     buf[0] = '\0';
@@ -152,7 +202,7 @@ int main(int argc, char *argv[]) {
     printf("open\n");
 
 
-    // signal
+    // // signal
 
 
     if (kill(server_pid, SIGCONT) == -1) {
