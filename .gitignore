@@ -1,8 +1,8 @@
-# Αγνοούμε όλα τα αρχεία (όχι τα directories)
+# Ignore all files (not directories)
 *
 !*/
 
-# Εκτός από τα παρακάτω
+# Except the following
 !*.c
 !*.h
 !Makefile

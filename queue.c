@@ -5,7 +5,7 @@
 #include <string.h>
 #include "queue.h"
 
-queue_pointer create_add_item(queue_pointer p, int job_id, char *job) {
+queue_pointer create_add_item(queue_pointer p, int job_id, char *job, pid_t pid) {
 
     queue_pointer new_node = (queue_pointer)malloc(sizeof(queue_node));
     if (new_node == NULL) {
@@ -16,6 +16,7 @@ queue_pointer create_add_item(queue_pointer p, int job_id, char *job) {
     new_node->job = (char*)malloc((strlen(job) + 1) * sizeof(char));
     strcpy(new_node->job, job);
     new_node->job_id = job_id;
+    new_node->pid = pid;
     new_node->next = NULL;
 
     // If the queue is empty, set the new node as the head
@@ -94,7 +95,51 @@ void print_queue(queue_pointer p) {
     printf("Queue contents:\n");
     queue_pointer current = p;
     while (current != NULL) {
-        printf("Job ID: %d, Job: %s\n", current->job_id, current->job);
+        printf("Job ID: %d, Job: %s, pid: %d \n", current->job_id, current->job, current->pid);
         current = current->next;
     }
+}
+
+
+int get_first_id(queue_pointer p) {
+    if (p == NULL) {
+        printf("Queue is empty\n");
+        return -1;
+    } else {
+        return p->job_id;
+    }
+}
+
+
+int queue_position(queue_pointer p, pid_t pid) {
+    int position = 1;
+    queue_pointer current = p;
+
+    // Traverse the queue
+    while (current != NULL) {
+        if (current->pid == pid) {
+            return position;
+        }
+        position++;
+        current = current->next;
+    }
+
+    // Job ID not found in the queue
+    return -1;
+}
+
+int return_id(queue_pointer p, pid_t pid) {
+    // Traverse the queue
+    queue_pointer current = p;
+    while (current != NULL) {
+        // Check if the current node's PID matches the specified PID
+        if (current->pid == pid) {
+            // Return the job_id associated with this PID
+            return current->job_id;
+        }
+        // Move to the next node
+        current = current->next;
+    }
+    // If the PID is not found in the queue, return a special value to indicate failure
+    return -1; // or any other suitable value to indicate failure
 }

@@ -14,6 +14,7 @@
 #define SERVER_FILE "jobExecutorServer.txt"
 #define SEM_NAME "/server_ready"
 
+
 volatile sig_atomic_t signal_received = 0;
 
 void signal_handler(int signum) {
@@ -23,6 +24,12 @@ void signal_handler(int signum) {
 }
 
 int main(int argc, char *argv[]) {
+    queue_pointer pendingQueue = NULL;
+    queue_pointer runningQueue = NULL;
+    int Concurrency = 1;
+    int job_id = 0;
+    char* token;
+    char* parameter;
 
     // Get the process ID (PID) of the server
     printf("Server is Turning on\n");
@@ -70,11 +77,10 @@ int main(int argc, char *argv[]) {
             ;  // Wait for signal
         }
         signal_received = 0; // Reset the signal flag
+        
         // read test
         int n;
         char buf[400];
-        printf("test1 in server\n");
-
 
         int fd = open(FIFO_FILE, O_RDONLY);
         if (fd == -1) {
@@ -96,6 +102,29 @@ int main(int argc, char *argv[]) {
             printf("%c",buf[i]);
         }
         printf("\nread\n");
+
+        // time for queue - forks etc
+
+
+        token = strtok(buf, " ");
+
+        if (strcmp(token, "issuejob") == 0) {
+            parameter = strtok(NULL, "");
+            if (parameter == NULL)
+                printf("\"issuejob\" : missing argument\n");
+            else {
+                // issuejob(instruction, &running_jobs_list, &queued_jobs_list, jobID, 1);
+                // jobID++;
+            }
+        }
+
+
+
+
+
+
+
+
     }
 
     // Delete the SERVER_FILE

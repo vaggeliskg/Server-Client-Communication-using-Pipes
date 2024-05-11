@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
     
     // create named pipe 
 
-    printf("im here\n");
+    //printf("im here\n");
     
 
 
@@ -199,7 +199,7 @@ int main(int argc, char *argv[]) {
             break;
         }
     }
-    printf("open\n");
+    //printf("open\n");
 
 
     // // signal
@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
         perror("open\n");
         exit(EXIT_FAILURE);
     }
-    printf("2\n");
+    //printf("2\n");
     int n = strlen(buf) + 1;
     printf("test1\n");
     if (write(fd, &n, sizeof(int)) < 0) {
@@ -223,7 +223,7 @@ int main(int argc, char *argv[]) {
         return 3;
     }
 
-    printf("test2\n");
+    //printf("test2\n");
 
     if (write(fd, buf, strlen(buf) + 1) < 0) {
         printf("error in write");
