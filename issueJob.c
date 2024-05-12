@@ -14,16 +14,22 @@
 // global pointer
 queue_pointer running_queue_global;
 
-
-void issuejob(char*,queue_pointer running_queue , queue_pointer pending_queue, int, int);
+void job_handler(int sig);
 void split_command(char *command, char **args, int max_args);
 
-void issuejob(char *command, queue_pointer running_queue, queue_pointer pending_queue, int job_id, int flag) {
+void issueJob(char *command, queue_pointer running_queue, queue_pointer pending_queue, int job_id, int flag) {
     char *args[10];
-    char* job;
+    char *job = malloc(strlen(command) + 1); // Allocate memory for job
+    if (job == NULL) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
     pid_t pid;
+    printf("command is %s\n", command);
     //pid_t child_pid;
     strcpy(job, command); 
+    printf("fsfssffs\n");
+    printf("this is the job %s\n", job);
     split_command(command, args, 10);
     signal(SIGCHLD, job_handler);
 
@@ -42,7 +48,9 @@ void issuejob(char *command, queue_pointer running_queue, queue_pointer pending_
     }
     else {
         printf("hiiiii\n");
-        create_add_item(running_queue, job_id, job, pid);
+        create_add_item(&running_queue_global, job_id, job, pid);
+        print_queue(&running_queue_global);
+
     }
 
 }
@@ -55,7 +63,7 @@ void job_handler(int sig) {
 
     while ((pid = waitpid((pid_t)(-1), &var, WNOHANG)) > 0) {
         id = return_id(running_queue_global,pid);
-        delete_item(running_queue_global, id);
+        delete_item(&running_queue_global, id);
 
         //not finished
     }

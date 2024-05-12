@@ -5,36 +5,73 @@
 #include <string.h>
 #include "queue.h"
 
-queue_pointer create_add_item(queue_pointer p, int job_id, char *job, pid_t pid) {
+// queue_pointer create_add_item(queue_pointer p, int job_id, char *job, pid_t pid) {
+//     printf("heresfafasgasgs\n");
+//     queue_pointer new_node = (queue_pointer)malloc(sizeof(queue_node));
+//     if (new_node == NULL) {
+//         perror("Failed to allocate memory for new node");
+//         exit(EXIT_FAILURE);
+//     }
 
+//     new_node->job = (char*)malloc((strlen(job) + 1) * sizeof(char));
+//     strcpy(new_node->job, job);
+//     new_node->job_id = job_id;
+//     new_node->pid = pid;
+//     new_node->next = NULL;
+
+//     // If the queue is empty, set the new node as the head
+//     if (p == NULL) {
+//         p = new_node;
+//         printf("here\n");
+//         return p;
+//     }
+//     else {
+//     // Traverse the queue to find the last node
+//     queue_pointer current = p;
+//     printf("hereee\n");
+//     while (current->next != NULL) {
+//         current = current->next;
+//     }
+
+//     // Add the new node to the end of the queue
+//     current->next = new_node;
+
+//     return p; // Return the head of the queue
+//     }
+// }
+void create_add_item(queue_pointer *p, int job_id, char *job, pid_t pid) {
+    // Allocate memory for the new node
     queue_pointer new_node = (queue_pointer)malloc(sizeof(queue_node));
     if (new_node == NULL) {
         perror("Failed to allocate memory for new node");
         exit(EXIT_FAILURE);
     }
 
+    // Allocate memory for the job string and copy it
     new_node->job = (char*)malloc((strlen(job) + 1) * sizeof(char));
+    if (new_node->job == NULL) {
+        perror("Failed to allocate memory for job string");
+        free(new_node);
+        exit(EXIT_FAILURE);
+    }
     strcpy(new_node->job, job);
+
+    // Initialize other fields of the new node
     new_node->job_id = job_id;
     new_node->pid = pid;
     new_node->next = NULL;
 
     // If the queue is empty, set the new node as the head
-    if (p == NULL) {
-        return new_node;
-    }
-    else {
-    // Traverse the queue to find the last node
-    queue_pointer current = p;
-
-    while (current->next != NULL) {
-        current = current->next;
-    }
-
-    // Add the new node to the end of the queue
-    current->next = new_node;
-
-    return p; // Return the head of the queue
+    if (*p == NULL) {
+        *p = new_node;
+    } else {
+        // Traverse the queue to find the last node
+        queue_pointer current = *p;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        // Add the new node to the end of the queue
+        current->next = new_node;
     }
 }
 
@@ -87,13 +124,13 @@ int count_items(queue_pointer p) {
     return count;
 }
 
-void print_queue(queue_pointer p) {
-    if (p == NULL) {
+void print_queue(queue_pointer *p) {
+    if (*p == NULL) {
         printf("Queue is empty\n");
         return;
     }
     printf("Queue contents:\n");
-    queue_pointer current = p;
+    queue_pointer current = *p;
     while (current != NULL) {
         printf("Job ID: %d, Job: %s, pid: %d \n", current->job_id, current->job, current->pid);
         current = current->next;

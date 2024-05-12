@@ -15,6 +15,7 @@
 #define SEM_NAME "/server_ready"
 
 
+extern int number_of_procceses;
 volatile sig_atomic_t signal_received = 0;
 
 void signal_handler(int signum) {
@@ -26,7 +27,7 @@ void signal_handler(int signum) {
 int main(int argc, char *argv[]) {
     queue_pointer pendingQueue = NULL;
     queue_pointer runningQueue = NULL;
-    int Concurrency = 1;
+    //int Concurrency = 1;
     int job_id = 0;
     char* token;
     char* parameter;
@@ -108,15 +109,25 @@ int main(int argc, char *argv[]) {
 
         token = strtok(buf, " ");
 
-        if (strcmp(token, "issuejob") == 0) {
+        printf("im in token: %s\n", token);
+        if (strcmp(token, "issueJob") == 0) {
             parameter = strtok(NULL, "");
             if (parameter == NULL)
                 printf("\"issuejob\" : missing argument\n");
             else {
-                // issuejob(instruction, &running_jobs_list, &queued_jobs_list, jobID, 1);
-                // jobID++;
+                printf("in else\n");
+                issueJob(parameter, runningQueue, pendingQueue, job_id, 1);
+                printf("after call\n");
+                job_id++;
             }
         }
+
+        // if (strcmp(token, "setConcurrency") == 0) {
+		// 	parameter = strtok(NULL, " ");
+		// 	number_of_procceses = atoi(parameter);
+		// 	/*function to update the lists used*/
+		// 	//update_running();
+		// }
 
 
 
