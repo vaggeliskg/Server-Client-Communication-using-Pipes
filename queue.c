@@ -5,40 +5,6 @@
 #include <string.h>
 #include "queue.h"
 
-// queue_pointer create_add_item(queue_pointer p, int job_id, char *job, pid_t pid) {
-//     printf("heresfafasgasgs\n");
-//     queue_pointer new_node = (queue_pointer)malloc(sizeof(queue_node));
-//     if (new_node == NULL) {
-//         perror("Failed to allocate memory for new node");
-//         exit(EXIT_FAILURE);
-//     }
-
-//     new_node->job = (char*)malloc((strlen(job) + 1) * sizeof(char));
-//     strcpy(new_node->job, job);
-//     new_node->job_id = job_id;
-//     new_node->pid = pid;
-//     new_node->next = NULL;
-
-//     // If the queue is empty, set the new node as the head
-//     if (p == NULL) {
-//         p = new_node;
-//         printf("here\n");
-//         return p;
-//     }
-//     else {
-//     // Traverse the queue to find the last node
-//     queue_pointer current = p;
-//     printf("hereee\n");
-//     while (current->next != NULL) {
-//         current = current->next;
-//     }
-
-//     // Add the new node to the end of the queue
-//     current->next = new_node;
-
-//     return p; // Return the head of the queue
-//     }
-// }
 void create_add_item(queue_pointer *p, int job_id, char *job, pid_t pid) {
     // Allocate memory for the new node
     queue_pointer new_node = (queue_pointer)malloc(sizeof(queue_node));
@@ -179,4 +145,22 @@ int return_id(queue_pointer p, pid_t pid) {
     }
     // If the PID is not found in the queue, return a special value to indicate failure
     return -1; // or any other suitable value to indicate failure
+}
+
+string return_job(queue_pointer p, int job_id) {
+    string str = "problem";
+    // Traverse the queue
+    queue_pointer current = p;
+    while (current != NULL) {
+        // Check if the current node's PID matches the specified PID
+        if (current->job_id == job_id) {
+            // Return the job_id associated with this PID
+            return current->job;
+        }
+        // Move to the next node
+        current = current->next;
+    }
+    // If the PID is not found in the queue, return a special value to indicate failure
+    printf("problem in returb_job\n");
+    return str;
 }
