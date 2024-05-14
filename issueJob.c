@@ -24,6 +24,7 @@ void split_command(char *command, char **args, int max_args);
 
 void issueJob(char *command, queue_pointer running_queue, queue_pointer pending_queue, int job_id, int flag) {
     char *args[10];
+    char answer[100];
     char *job = malloc(strlen(command) + 1); // Allocate memory for job
     if (job == NULL) {
         perror("malloc");
@@ -56,13 +57,20 @@ void issueJob(char *command, queue_pointer running_queue, queue_pointer pending_
         }
         else {
             printf("%d\n", Concurrency);
+            //print_queue(&running_queue_global);
             create_add_item(&running_queue_global, job_id, job, pid);
-            print_queue(&running_queue_global);
-
+            int pos = queue_position(running_queue_global,job_id);
+            sprintf(answer, "%s %d\t%s %s\t%s %d","job_id: ",job_id,"job: ", job,"Position: ",pos);
+            send_answer(answer);
+            // sprintf(answer, "%s","end");
+            // send_answer(answer);
+            
         }
     }
     else {
         create_add_item(&pending_queue_global, job_id, job, pid);
+        // int pos = queue_position(pending_queue_global,job_id);
+        // sprintf(answer, "%s %d\t%s %s\t%s %d","job_id: ",job_id,"job: ", job,"Position: ",pos);
     }
 }
 

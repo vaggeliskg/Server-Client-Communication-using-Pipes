@@ -19,9 +19,11 @@ int delete_item(queue_pointer *p, int job_id);
 int count_items(queue_pointer p);
 void print_queue(queue_pointer *p); 
 int get_first_id(queue_pointer p);
-int queue_position(queue_pointer p, pid_t pid);
+int queue_position(queue_pointer p, int job_id);
 int return_id(queue_pointer p, pid_t pid);
 string return_job(queue_pointer p, int job_id);
+int get_next_id(queue_pointer p, int current_id);
 
 void issueJob(char*,queue_pointer running_queue , queue_pointer pending_queue, int, int);
 void updated_Concurrency(queue_pointer running_queue, queue_pointer pending_queue);
+void send_answer(string answer);

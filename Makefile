@@ -16,6 +16,6 @@ issueJob.o: issueJob.c
 	$(CC) $(CFLAGS) -c -o $@ issueJob.c
 
 clean:
-	rm -f jobExecutorServer jobCommander myfifo *.o
+	rm -f jobExecutorServer jobCommander myfifo answer *.o
 
 .PHONY: all makeclean

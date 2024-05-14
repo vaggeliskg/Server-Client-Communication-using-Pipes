@@ -13,6 +13,7 @@
 #define FIFO_FILE "myfifo"
 #define SERVER_FILE "jobExecutorServer.txt"
 #define SEM_NAME "/server_ready"
+#define ANSWER_FILE "answer"
 
 
 
@@ -94,31 +95,6 @@ int main(int argc, char *argv[]) {
             }
             printf("Named pipe '%s' created successfully.\n", FIFO_FILE);
     }
-
-    // int pipe = open(FIFO_FILE, O_RDONLY);
-
-    // // Check if the open() call failed
-    // if (pipe == -1) {
-    //     // Check if the error is due to file not existing
-    //     if (errno == ENOENT) {
-    //         // File does not exist, create the named pipe
-    //         if (mkfifo(FIFO_FILE, 0666) == -1) {
-    //             perror("Error creating named pipe");
-    //             exit(EXIT_FAILURE);
-    //         }
-    //         printf("Named pipe '%s' created successfully.\n", FIFO_FILE);
-    //     } else {
-    //         // Other error occurred during open()
-    //         perror("Error opening file");
-    //         exit(EXIT_FAILURE);
-    //     }
-    // } else {
-    //     // File already exists, close the file descriptor
-    //     close(pipe);
-    //     printf("Named pipe '%s' already exists.\n", FIFO_FILE);
-    // }
-
-
 
     if (argc < 2) {
         printf("Usage: %s <command> [arguments]\n", argv[0]);
@@ -232,12 +208,37 @@ int main(int argc, char *argv[]) {
     }
     printf("written\n");
     close(fd);
-    // if ((write(fd, buf, MAXLEN + 1)) == -1) //notify Server for command
-	// 	{
-	// 		perror(" Error in Writing ");
-	// 		exit(2);
-	// 	}
-	// 	//kill(, SIGCONT); //send signal to Server that pipe has data
+
+    while (1) {
+		int n;
+        char buf[MAXLEN];
+        printf("in read\n");
+        int fd = open(ANSWER_FILE, O_RDONLY);
+        if (fd == -1) {
+            perror("Failed to open SERVER_FILE 22222 in server");
+            exit(EXIT_FAILURE);
+        }
+        if(read(fd, &n, sizeof(int)) < 0) {
+            printf("end 1\n");
+            return 6;
+        }
+        if(read(fd, buf, sizeof(char) * n) < 0 ) {
+            printf("end 2\n");
+            return 7;
+        }
+
+        close(fd);
+        size_t len = strlen(buf);
+        for( int i = 0; i < len; i++) {
+            printf("%c",buf[i]);
+        }
+        printf("\n");
+        // if (strcmp(buf, "end") == 0) {
+        //     printf("%s\n", buf);
+            break;
+        // }
+    // receive answer from server
+    }
 
     return 0;
 }

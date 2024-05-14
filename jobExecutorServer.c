@@ -9,15 +9,26 @@
 #include <semaphore.h>
 #include "queue.h"
 
-
+#define MAXLEN 400
 #define FIFO_FILE "myfifo"
 #define SERVER_FILE "jobExecutorServer.txt"
 #define SEM_NAME "/server_ready"
+#define ANSWER_FILE "answer"
 
 
 volatile sig_atomic_t signal_received = 0;
 int Concurrency = 1;
 
+
+
+int isAnswerActive() {
+    int fd3 = open(ANSWER_FILE, O_RDONLY | O_NONBLOCK);
+    if (fd3 != -1) {
+        close(fd3);
+        return 1; // answer is active
+    }
+    return 0; // answer is not active
+}
 void signal_handler(int signum) {
     if (signum == SIGCONT) {
         signal_received = 1;
@@ -25,6 +36,9 @@ void signal_handler(int signum) {
 }
 
 int main(int argc, char *argv[]) {
+    // char answer_buf[MAXLEN];
+    // char str[20];
+    char answer[100];
     queue_pointer pendingQueue = NULL;
     queue_pointer runningQueue = NULL;
     int job_id = 0;
@@ -50,8 +64,19 @@ int main(int argc, char *argv[]) {
     write(sf, pid_str, strlen(pid_str));
     close(sf);
 
+////////////////////////////////////////////////////////////////
+    if(isAnswerActive()) {
+        printf("Answer pipe '%s' already exists.\n", ANSWER_FILE);
+    }
+    else {
+        if (mkfifo(ANSWER_FILE, 0666) == -1) {
+                perror("Error creating named pipe");
+                exit(EXIT_FAILURE);
+            }
+            printf("Answer pipe '%s' created successfully.\n", ANSWER_FILE);
+    }
 
-
+////////////////////////////////////////////////////////////////
     sem_t *sem = sem_open(SEM_NAME, O_CREAT, 0666, 0);
     if (sem == SEM_FAILED) {
         perror("sem_open");
@@ -119,6 +144,7 @@ int main(int argc, char *argv[]) {
                 printf("after call\n");
                 printf("Concurrency : %d\n", Concurrency);
                 job_id++;
+                
             }
         }
 
@@ -129,11 +155,69 @@ int main(int argc, char *argv[]) {
 			/*function to update the queue */
             printf("%d\n", Concurrency);
 			updated_Concurrency(runningQueue,pendingQueue);
+            // might fix later using sem
+            sprintf(answer, "%s %d", "Concurrency set to :", Concurrency);
+			send_answer(answer);
+            sprintf(answer, "%s","end");
+            send_answer(answer);
 		}
 
+        if(strcmp(token, "stop") == 0) {
+            parameter = strtok(NULL," ");
+            int process_id = atoi(parameter);
+            if(delete_item(&runningQueue,process_id)) {
+                //found in running queue
+                sprintf(answer,"%s %d", "Terminated job with id:",process_id);
+                send_answer(answer);
+            }
+            else if(delete_item(&pendingQueue,process_id)) {
+                sprintf(answer,"%s %d", "Removed job with id:",process_id);
+                send_answer(answer);
+            }
+            else {
+                sprintf(answer,"%s %d", "Did not find job with id:",process_id);
+                send_answer(answer);
+            }
+        }
 
+        if(strcmp(token, "poll") == 0) {
+            int another_id;
+            string job = NULL;
+            int position, next_id;
+            parameter = strtok(NULL," ");
+            if (strcmp(parameter, "running") == 0) {
+                int number = count_items(runningQueue);
+                if(number > 0) {
 
+                    another_id = get_first_id(runningQueue);
+                    job = return_job(runningQueue, another_id);
+                    position = queue_position(runningQueue, another_id);
+                    sprintf(answer, "%s %d\t%s %s\t%s %d","job_id: ",another_id,"job: ", job,"Position: ",position);
+                    send_answer(answer);
 
+                    for (int i = 0; i < number; i ++) {
+                        next_id = get_next_id(runningQueue,another_id);
+                        job = return_job(runningQueue, next_id);
+                        position = queue_position(runningQueue, next_id);
+                        sprintf(answer, "%s %d\t%s %s\t%s %d","job_id: ",next_id,"job: ", job,"Position: ",position);
+                        send_answer(answer);
+                    }
+                    sprintf(answer, "%s","end");
+                    send_answer(answer);
+                }
+                else {
+                    sprintf(answer, "%s","end");
+                    send_answer(answer);
+                }
+				// print_running(running_jobs_list, args);
+				// send_response(args);
+			}
+			if (strcmp(parameter, "queued") == 0) {
+				// print_queued(queued_jobs_list, args);
+				// send_response(args);
+			}
+
+        }
 
 
 
@@ -148,4 +232,34 @@ int main(int argc, char *argv[]) {
     
     printf("Server is Turning off\n");
     return 0;
+}
+
+
+
+void send_answer(string answer) {
+	int pipe;
+	//char end[5];
+    printf("in write\n");
+	if( (pipe=open(ANSWER_FILE, O_WRONLY)) < 0) {
+		perror("server writing: fifo open error");
+		exit(1);
+	}
+
+    int n = strlen(answer) + 1;
+
+    if (write(pipe, &n, sizeof(int)) < 0) {
+        printf("1 error in write\n");
+    }
+
+    if (write(pipe, answer, strlen(answer) + 1) < 0) {
+        printf("error in write");
+    }
+
+	// end[0] = '\0';
+	// strcpy(end, "exit");
+	// if ((write(pipe, end, strlen(end) + 1)) < 0) {
+	// 		perror("server : Error in Writing");
+	// 		exit(2);
+	// }
+	close(pipe);
 }

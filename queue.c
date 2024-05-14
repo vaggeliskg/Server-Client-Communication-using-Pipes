@@ -98,7 +98,7 @@ void print_queue(queue_pointer *p) {
     printf("Queue contents:\n");
     queue_pointer current = *p;
     while (current != NULL) {
-        printf("Job ID: %d, Job: %s, pid: %d \n", current->job_id, current->job, current->pid);
+        printf("Job ID: %d, Job: %s, pid: %d, pos: %d \n", current->job_id, current->job, current->pid,queue_position(current, current->job_id) );
         current = current->next;
     }
 }
@@ -114,13 +114,13 @@ int get_first_id(queue_pointer p) {
 }
 
 
-int queue_position(queue_pointer p, pid_t pid) {
+int queue_position(queue_pointer p, int job_id) {
     int position = 1;
     queue_pointer current = p;
 
     // Traverse the queue
     while (current != NULL) {
-        if (current->pid == pid) {
+        if (current->job_id == job_id) {
             return position;
         }
         position++;
@@ -163,4 +163,25 @@ string return_job(queue_pointer p, int job_id) {
     // If the PID is not found in the queue, return a special value to indicate failure
     printf("problem in returb_job\n");
     return str;
+}
+
+int get_next_id(queue_pointer p, int current_id) {
+    queue_pointer current = p;
+    int found = 0;
+    int next_id = -1;
+
+    while (current != NULL) {
+        if (found) {
+            next_id = current->job_id;
+            break;
+        }
+
+        if (current->job_id == current_id) {
+            found = 1;
+        }
+
+        current = current->next;
+    }
+
+    return next_id;
 }
