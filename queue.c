@@ -98,7 +98,7 @@ void print_queue(queue_pointer p) {
     printf("Queue contents:\n");
     queue_pointer current = p;
     while (current != NULL) {
-        printf("Job ID: %d, Job: %s, pid: %d, pos: %d \n", current->job_id, current->job, current->pid,queue_position(current, current->job_id) );
+        printf("Job ID: %d, Job: %s, pid: %d, pos: %d \n", current->job_id, current->job, current->pid,queue_position(p, current->job_id) );
         current = current->next;
     }
 }
