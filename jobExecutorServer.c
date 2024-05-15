@@ -19,6 +19,9 @@
 volatile sig_atomic_t signal_received = 0;
 int Concurrency = 1;
 
+queue_pointer pendingQueue = NULL;
+queue_pointer runningQueue = NULL;
+
 
 
 int isAnswerActive() {
@@ -39,8 +42,6 @@ int main(int argc, char *argv[]) {
     // char answer_buf[MAXLEN];
     // char str[20];
     char answer[100];
-    queue_pointer pendingQueue = NULL;
-    queue_pointer runningQueue = NULL;
     int job_id = 0;
     char* token;
     char* parameter;
@@ -140,7 +141,7 @@ int main(int argc, char *argv[]) {
                 printf("\"issuejob\" : missing argument\n");
             else {
                 printf("in else\n");
-                issueJob(parameter, runningQueue, pendingQueue, job_id, 1);
+                issueJob(parameter,job_id);
                 printf("after call\n");
                 printf("Concurrency : %d\n", Concurrency);
                 job_id++;
@@ -158,8 +159,8 @@ int main(int argc, char *argv[]) {
             // might fix later using sem
             sprintf(answer, "%s %d", "Concurrency set to :", Concurrency);
 			send_answer(answer);
-            sprintf(answer, "%s","end");
-            send_answer(answer);
+            // sprintf(answer, "%s","end");
+            // send_answer(answer);
 		}
 
         if(strcmp(token, "stop") == 0) {
@@ -186,7 +187,7 @@ int main(int argc, char *argv[]) {
             int position, next_id;
             parameter = strtok(NULL," ");
             if (strcmp(parameter, "running") == 0) {
-                int number = count_items(runningQueue);
+                int number = count_items(&runningQueue);
                 if(number > 0) {
 
                     another_id = get_first_id(runningQueue);
@@ -195,19 +196,18 @@ int main(int argc, char *argv[]) {
                     sprintf(answer, "%s %d\t%s %s\t%s %d","job_id: ",another_id,"job: ", job,"Position: ",position);
                     send_answer(answer);
 
-                    for (int i = 0; i < number; i ++) {
-                        next_id = get_next_id(runningQueue,another_id);
-                        job = return_job(runningQueue, next_id);
-                        position = queue_position(runningQueue, next_id);
-                        sprintf(answer, "%s %d\t%s %s\t%s %d","job_id: ",next_id,"job: ", job,"Position: ",position);
-                        send_answer(answer);
-                    }
-                    sprintf(answer, "%s","end");
-                    send_answer(answer);
+                    // for (int i = 0; i < number; i ++) {
+                    //     next_id = get_next_id(runningQueue,another_id);
+                    //     job = return_job(runningQueue, next_id);
+                    //     position = queue_position(runningQueue, next_id);
+                    //     sprintf(answer, "%s %d\t%s %s\t%s %d","job_id: ",next_id,"job: ", job,"Position: ",position);
+                    //     send_answer(answer);
+                    // }
+                    // sprintf(answer, "%s","end");
+                    // send_answer(answer);
                 }
                 else {
-                    sprintf(answer, "%s","end");
-                    send_answer(answer);
+                    printf("empty queue\n");
                 }
 				// print_running(running_jobs_list, args);
 				// send_response(args);
@@ -215,6 +215,30 @@ int main(int argc, char *argv[]) {
 			if (strcmp(parameter, "queued") == 0) {
 				// print_queued(queued_jobs_list, args);
 				// send_response(args);
+                int number = count_items(&pendingQueue);
+                if(number > 0) {
+
+                    another_id = get_first_id(pendingQueue);
+                    job = return_job(pendingQueue, another_id);
+                    position = queue_position(pendingQueue, another_id);
+                    sprintf(answer, "%s %d\t%s %s\t%s %d","job_id: ",another_id,"job: ", job,"Position: ",position);
+                    send_answer(answer);
+
+                    // for (int i = 0; i < number; i ++) {
+                    //     next_id = get_next_id(runningQueue,another_id);
+                    //     job = return_job(runningQueue, next_id);
+                    //     position = queue_position(runningQueue, next_id);
+                    //     sprintf(answer, "%s %d\t%s %s\t%s %d","job_id: ",next_id,"job: ", job,"Position: ",position);
+                    //     send_answer(answer);
+                    // }
+                    // sprintf(answer, "%s","end");
+                    // send_answer(answer);
+                }
+                else {
+                    printf("empty queue\n");
+                    // sprintf(answer, "%s","end");
+                    // send_answer(answer);
+                }
 			}
 
         }

@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
 
     int sf = open(SERVER_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
     if (sf == -1) {
-        perror("Fuck... failed to open SERVER_FILE");
+        perror("Failed to open SERVER_FILE");
         exit(EXIT_FAILURE);
     }
 
@@ -159,7 +159,6 @@ int main(int argc, char *argv[]) {
     pid_t server_pid = atoi(pid_str);
     printf("Server PID: %d\n", server_pid);
 
-    
     char buf[MAXLEN]; //Create a string containing all the arguments passed, to write in pipe
     buf[0] = '\0';
 	for (int i = 1; i < argc - 1; i++)
@@ -176,23 +175,21 @@ int main(int argc, char *argv[]) {
             break;
         }
     }
-    //printf("open\n");
 
 
     // // signal
-
 
     if (kill(server_pid, SIGCONT) == -1) {
         perror("kill");
         exit(EXIT_FAILURE);
     }
-
+    printf("4444444444jfjafjajsfasfas\n");
     int fd = open(FIFO_FILE, O_WRONLY);
     if(fd == - 1) {
         perror("open\n");
         exit(EXIT_FAILURE);
     }
-    //printf("2\n");
+
     int n = strlen(buf) + 1;
     printf("test1\n");
     if (write(fd, &n, sizeof(int)) < 0) {
@@ -209,35 +206,39 @@ int main(int argc, char *argv[]) {
     printf("written\n");
     close(fd);
 
+
     while (1) {
-		int n;
-        char buf[MAXLEN];
-        printf("in read\n");
-        int fd = open(ANSWER_FILE, O_RDONLY);
-        if (fd == -1) {
-            perror("Failed to open SERVER_FILE 22222 in server");
-            exit(EXIT_FAILURE);
-        }
-        if(read(fd, &n, sizeof(int)) < 0) {
+    
+    int fd7 = open(ANSWER_FILE, O_RDONLY);
+    if (fd7 == -1) {
+        perror("Failed to open SERVER_FILE 22222 in server");
+        exit(EXIT_FAILURE);
+    }
+	int n = MAXLEN;
+    char answer_buf[MAXLEN];
+        //printf("in read\n");
+        if(read(fd7, &n, sizeof(int)) < 0) {
             printf("end 1\n");
             return 6;
         }
-        if(read(fd, buf, sizeof(char) * n) < 0 ) {
+        if(read(fd7, answer_buf, sizeof(char) * n) < 0) {
             printf("end 2\n");
             return 7;
         }
 
-        close(fd);
-        size_t len = strlen(buf);
+        size_t len = strlen(answer_buf);        
         for( int i = 0; i < len; i++) {
-            printf("%c",buf[i]);
+            printf("%c",answer_buf[i]);
         }
+
         printf("\n");
-        // if (strcmp(buf, "end") == 0) {
-        //     printf("%s\n", buf);
-            break;
+        // if (strcmp(answer_buf, "end") == 0) {
+        //     printf("%s\n", answer_buf);
+        break;
         // }
+
     // receive answer from server
+    close(fd7);
     }
 
     return 0;

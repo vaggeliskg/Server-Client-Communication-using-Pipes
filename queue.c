@@ -80,9 +80,9 @@ int delete_item(queue_pointer *p, int job_id) {
 }
 
 
-int count_items(queue_pointer p) {
+int count_items(queue_pointer *p) {
     int count = 0;
-    queue_pointer current = p;
+    queue_pointer current = *p;
     while (current != NULL) {
         count++;
         current = current->next;

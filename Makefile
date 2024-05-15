@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -pthread
 
-all: jobExecutorServer jobCommander
+all: jobExecutorServer jobCommander progDelay
 
 jobExecutorServer: jobExecutorServer.c issueJob.o queue.o
 	$(CC) $(CFLAGS) -o $@ $^
@@ -15,7 +15,10 @@ queue.o: queue.c queue.h
 issueJob.o: issueJob.c 
 	$(CC) $(CFLAGS) -c -o $@ issueJob.c
 
+progDelay: progDelay.c
+	$(CC) $(CFLAGS) -o $@ $^
+
 clean:
-	rm -f jobExecutorServer jobCommander myfifo answer *.o
+	rm -f jobExecutorServer jobCommander myfifo answer progDelay *.o
 
 .PHONY: all makeclean

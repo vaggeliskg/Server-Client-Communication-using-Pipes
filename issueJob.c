@@ -16,13 +16,13 @@
 // MIN KSEXASEIS FREE(JOB)
 
 // global pointer
-queue_pointer running_queue_global;
-queue_pointer pending_queue_global;
+// queue_pointer running_queue_global = NULL;
+// queue_pointer pending_queue_global = NULL;
 
 void job_handler(int sig);
 void split_command(char *command, char **args, int max_args);
 
-void issueJob(char *command, queue_pointer running_queue, queue_pointer pending_queue, int job_id, int flag) {
+void issueJob(char *command, int job_id) {
     char *args[10];
     char answer[100];
     char *job = malloc(strlen(command) + 1); // Allocate memory for job
@@ -31,18 +31,17 @@ void issueJob(char *command, queue_pointer running_queue, queue_pointer pending_
         exit(EXIT_FAILURE);
     }
     pid_t pid = -1;
-    printf("command is %s\n", command);
+
     //pid_t child_pid;
     strcpy(job, command); 
-    printf("fsfssffs\n");
-    printf("this is the job %s\n", job);
+
     split_command(command, args, 10);
     signal(SIGCHLD, job_handler);
 
-    running_queue_global = running_queue;
-    pending_queue_global = pending_queue;
+    // running_queue_global = running_queue;
+    // pending_queue_global = pending_queue;
 
-    int number_of_running_proc = count_items(running_queue_global);
+    int number_of_running_proc = count_items(&runningQueue);
     if(number_of_running_proc < Concurrency) {
         if ((pid = fork()) < 0) { 
             perror("fork");
@@ -56,19 +55,36 @@ void issueJob(char *command, queue_pointer running_queue, queue_pointer pending_
             //child_pid = getpid();
         }
         else {
-            printf("%d\n", Concurrency);
+            //printf("%d\n", Concurrency);
             //print_queue(&running_queue_global);
-            create_add_item(&running_queue_global, job_id, job, pid);
-            int pos = queue_position(running_queue_global,job_id);
+            create_add_item(&runningQueue, job_id, job, pid);
+            // *running_queue = running_queue_global;
+
+            printf("Added: %d \n", count_items(&runningQueue));
+
+            int pos = queue_position(runningQueue,job_id);
             sprintf(answer, "%s %d\t%s %s\t%s %d","job_id: ",job_id,"job: ", job,"Position: ",pos);
             send_answer(answer);
+            //*running_queue = running_queue_global;
+    // answer[0] = '\0';
+    // sprintf(answer, "%s","end");
+    // send_answer(answer);
+            // printf("send end\n");
+            // answer[0] = '\0';
             // sprintf(answer, "%s","end");
             // send_answer(answer);
             
         }
     }
     else {
-        create_add_item(&pending_queue_global, job_id, job, pid);
+        create_add_item(&pendingQueue, job_id, job, pid);
+        //*pending_queue = pending_queue_global;
+        int pos = queue_position(pendingQueue,job_id);
+        sprintf(answer, "%s %d\t%s %s\t%s %d","job_id: ",job_id,"job: ", job,"Position: ",pos);
+        send_answer(answer);
+        //*pending_queue = pending_queue_global;
+// sprintf(answer, "%s","end");
+// send_answer(answer);
         // int pos = queue_position(pending_queue_global,job_id);
         // sprintf(answer, "%s %d\t%s %s\t%s %d","job_id: ",job_id,"job: ", job,"Position: ",pos);
     }
@@ -76,32 +92,31 @@ void issueJob(char *command, queue_pointer running_queue, queue_pointer pending_
 
 // if Concurrency gets incremented add jobs
 // if decremented do nothing just let the jobs finished and new Concurrency will take place
-void updated_Concurrency(queue_pointer running_queue, queue_pointer pending_queue) {
-    printf("hereeeeeee\n");
+void updated_Concurrency() {
+
     int id2;
     char job[200];
     int number_of_running_processes;
     int number_of_pending_processes;
 
-    running_queue_global = running_queue;
-    pending_queue_global = pending_queue;
+    // running_queue_global = running_queue;
+    // pending_queue_global = pending_queue;
 
-    printf("heresfsfsfsfsf\n");
-    printf("concurrency isssss %d\n", Concurrency);
-    number_of_running_processes = count_items(running_queue_global);
+
+    number_of_running_processes = count_items(&runningQueue);
 
     //printf("concurrency isssss %d", Concurrency);
     if (number_of_running_processes < Concurrency) {
 		for (int i=0 ; i<abs(Concurrency - number_of_running_processes) ; i++) {
             	/*as long as there are queued jobs*/
-			number_of_pending_processes = count_items(pending_queue_global);
+			number_of_pending_processes = count_items(&pendingQueue);
 			if (number_of_pending_processes > 0) {
 				//list = queued_jobs_list;
-                id2 = get_first_id(pending_queue_global);
-				strcpy(job, return_job(pending_queue_global,id2));
+                id2 = get_first_id(pendingQueue);
+				strcpy(job, return_job(pendingQueue,id2));
                 		/*remove the oldest queued job*/
-                delete_item(&pending_queue_global, id2);
-				issueJob(job, running_queue_global, pending_queue_global, id2, 1);
+                delete_item(&pendingQueue, id2);
+				issueJob(job,id2);
 			}
 		}
 	}
@@ -117,24 +132,24 @@ void job_handler(int sig) {
     int number_of_pending_processes;
 
     while ((pid = waitpid((pid_t)(-1), &var, WNOHANG)) > 0) {
-        id = return_id(running_queue_global,pid);
-        delete_item(&running_queue_global, id);
+        id = return_id(runningQueue,pid);
+        delete_item(&runningQueue, id);
 
         //not finished
     }
-    number_of_running_processes = count_items(running_queue_global);
+    number_of_running_processes = count_items(&runningQueue);
 
     if (number_of_running_processes < Concurrency) {
 		for (int i=0 ; i<abs(Concurrency - number_of_running_processes) ; i++) {
             	/*as long as there are queued jobs*/
-			number_of_pending_processes = count_items(pending_queue_global);
+			number_of_pending_processes = count_items(&pendingQueue);
 			if (number_of_pending_processes > 0) {
 				//list = queued_jobs_list;
-                id2 = get_first_id(pending_queue_global);
-				strcpy(job, return_job(pending_queue_global,id2));
+                id2 = get_first_id(pendingQueue);
+				strcpy(job, return_job(pendingQueue,id2));
                 		/*remove the oldest queued job*/
-                delete_item(&pending_queue_global, id2);
-				issueJob(job, running_queue_global, pending_queue_global, id2, 1);
+                delete_item(&pendingQueue, id2);
+				issueJob(job,  id2);
 			}
 		}
 	}
