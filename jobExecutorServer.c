@@ -142,14 +142,14 @@ int main(int argc, char *argv[]) {
             }
         }
 
-                if(strcmp(token, "poll") == 0) {
+        if(strcmp(token, "poll") == 0) {
             int another_id;
             string job = NULL;
             int position; //next_id;
             parameter = strtok(NULL," ");
             if (strcmp(parameter, "running") == 0) {
                 int number = count_items(&runningQueue);
-                print_queue(&runningQueue);
+                print_queue(runningQueue);
 
                 printf("queue has: %d\n",number);
                 if(number > 0) {

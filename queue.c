@@ -90,13 +90,13 @@ int count_items(queue_pointer *p) {
     return count;
 }
 
-void print_queue(queue_pointer *p) {
-    if (*p == NULL) {
+void print_queue(queue_pointer p) {
+    if (p == NULL) {
         printf("Queue is empty\n");
         return;
     }
     printf("Queue contents:\n");
-    queue_pointer current = *p;
+    queue_pointer current = p;
     while (current != NULL) {
         printf("Job ID: %d, Job: %s, pid: %d, pos: %d \n", current->job_id, current->job, current->pid,queue_position(current, current->job_id) );
         current = current->next;
