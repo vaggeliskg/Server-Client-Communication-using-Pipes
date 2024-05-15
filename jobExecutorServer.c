@@ -195,6 +195,7 @@ int main(int argc, char *argv[]) {
                     position = queue_position(runningQueue, another_id);
                     sprintf(answer, "%s %d\t%s %s\t%s %d","job_id: ",another_id,"job: ", job,"Position: ",position);
                     send_answer(answer);
+                    printf("queue has: %d", number);
 
                     // for (int i = 0; i < number; i ++) {
                     //     next_id = get_next_id(runningQueue,another_id);
@@ -223,6 +224,7 @@ int main(int argc, char *argv[]) {
                     position = queue_position(pendingQueue, another_id);
                     sprintf(answer, "%s %d\t%s %s\t%s %d","job_id: ",another_id,"job: ", job,"Position: ",position);
                     send_answer(answer);
+                    printf("queue has: %d", number);
 
                     // for (int i = 0; i < number; i ++) {
                     //     next_id = get_next_id(runningQueue,another_id);
@@ -242,20 +244,20 @@ int main(int argc, char *argv[]) {
 			}
 
         }
+        if(strcmp(token, "exit")) {
+            // Delete the SERVER_FILE
+            if (unlink(SERVER_FILE) == -1) {
+                perror("Failed to delete SERVER_FILE");
+                exit(EXIT_FAILURE);
+            }
 
+            sprintf(answer, "%s","jobExecutorServer terminated.");
+            send_answer(answer);
+            return 0;
+        }
 
-
-
-    }
-
-    // Delete the SERVER_FILE
-    if (unlink(SERVER_FILE) == -1) {
-        perror("Failed to delete SERVER_FILE");
-        exit(EXIT_FAILURE);
     }
     
-    printf("Server is Turning off\n");
-    return 0;
 }
 
 
