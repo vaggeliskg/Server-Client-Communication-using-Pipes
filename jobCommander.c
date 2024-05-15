@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
     }
-    //sleep(1);
+
       
     printf("Waiting for server...\n");
     if (sem_wait(sem) == -1) {
@@ -78,10 +78,6 @@ int main(int argc, char *argv[]) {
     printf("Server ready!\n");
 
     sem_close(sem);
-    
-    // create named pipe 
-
-    //printf("im here\n");
     
 
 
@@ -183,7 +179,7 @@ int main(int argc, char *argv[]) {
         perror("kill");
         exit(EXIT_FAILURE);
     }
-    printf("4444444444jfjafjajsfasfas\n");
+    printf("STUCK IN LEFT PIPE\n");
     int fd = open(FIFO_FILE, O_WRONLY);
     if(fd == - 1) {
         perror("open\n");
@@ -191,19 +187,19 @@ int main(int argc, char *argv[]) {
     }
 
     int n = strlen(buf) + 1;
-    printf("test1\n");
+
     if (write(fd, &n, sizeof(int)) < 0) {
         printf("1 error in write\n");
         return 3;
     }
 
-    //printf("test2\n");
+
 
     if (write(fd, buf, strlen(buf) + 1) < 0) {
         printf("error in write");
         return 3;
     }
-    printf("written\n");
+    // printf("written\n");
     close(fd);
 
 

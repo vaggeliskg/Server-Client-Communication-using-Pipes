@@ -19,6 +19,6 @@ progDelay: progDelay.c
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
-	rm -f jobExecutorServer jobCommander myfifo answer progDelay *.o
+	rm -f jobExecutorServer jobCommander myfifo answer progDelay jobExecutorServer.txt *.o
 
 .PHONY: all makeclean
