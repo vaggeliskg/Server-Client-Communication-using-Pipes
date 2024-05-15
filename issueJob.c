@@ -140,7 +140,7 @@ void job_handler(int sig) {
     number_of_running_processes = count_items(&runningQueue);
 
     if (number_of_running_processes < Concurrency) {
-		for (int i=0 ; i<abs(Concurrency - number_of_running_processes) ; i++) {
+		for (int i=0 ; i< (Concurrency - number_of_running_processes) ; i++) {
             	/*as long as there are queued jobs*/
 			number_of_pending_processes = count_items(&pendingQueue);
 			if (number_of_pending_processes > 0) {
