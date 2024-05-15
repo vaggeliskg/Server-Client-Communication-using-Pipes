@@ -6,6 +6,7 @@
 #include "queue.h"
 
 void create_add_item(queue_pointer *p, int job_id, char *job, pid_t pid) {
+
     // Allocate memory for the new node
     queue_pointer new_node = (queue_pointer)malloc(sizeof(queue_node));
     if (new_node == NULL) {
@@ -22,16 +23,16 @@ void create_add_item(queue_pointer *p, int job_id, char *job, pid_t pid) {
     }
     strcpy(new_node->job, job);
 
-    // Initialize other fields of the new node
+    // Initialisation
     new_node->job_id = job_id;
     new_node->pid = pid;
     new_node->next = NULL;
 
-    // If the queue is empty, set the new node as the head
+    // If  empty, set the new node as the head
     if (*p == NULL) {
         *p = new_node;
     } else {
-        // Traverse the queue to find the last node
+        // Find the last node
         queue_pointer current = *p;
         while (current->next != NULL) {
             current = current->next;
@@ -52,13 +53,13 @@ int delete_item(queue_pointer *p, int job_id) {
     queue_pointer current = *p;
     queue_pointer prev = NULL;
 
-    // Traverse the queue to find the node with the specified job_id
+    // Find the id 
     while (current != NULL && current->job_id != job_id) {
         prev = current;
         current = current->next;
     }
 
-    // If the node with the specified job_id is not found
+    // If the node with the specified id is not found
     if (current == NULL) {
         printf("Job with ID %d not found in the queue.\n", job_id);
         return 0;
@@ -71,7 +72,7 @@ int delete_item(queue_pointer *p, int job_id) {
         prev->next = current->next;
     }
 
-    // Free memory allocated for the job string and the node itself
+    // Free allocated memory
     free(current->job);
     free(current);
 
@@ -118,7 +119,6 @@ int queue_position(queue_pointer p, int job_id) {
     int position = 1;
     queue_pointer current = p;
 
-    // Traverse the queue
     while (current != NULL) {
         if (current->job_id == job_id) {
             return position;
@@ -126,38 +126,27 @@ int queue_position(queue_pointer p, int job_id) {
         position++;
         current = current->next;
     }
-
-    // Job ID not found in the queue
     return -1;
 }
 
 int return_id(queue_pointer p, pid_t pid) {
-    // Traverse the queue
     queue_pointer current = p;
     while (current != NULL) {
-        // Check if the current node's PID matches the specified PID
         if (current->pid == pid) {
-            // Return the job_id associated with this PID
             return current->job_id;
         }
-        // Move to the next node
         current = current->next;
     }
-    // If the PID is not found in the queue, return a special value to indicate failure
-    return -1; // or any other suitable value to indicate failure
+    return -1; 
 }
 
 string return_job(queue_pointer p, int job_id) {
     string str = "problem";
-    // Traverse the queue
     queue_pointer current = p;
     while (current != NULL) {
-        // Check if the current node's PID matches the specified PID
         if (current->job_id == job_id) {
-            // Return the job_id associated with this PID
             return current->job;
         }
-        // Move to the next node
         current = current->next;
     }
     // If the PID is not found in the queue, return a special value to indicate failure
@@ -169,19 +158,15 @@ int get_next_id(queue_pointer p, int current_id) {
     queue_pointer current = p;
     int found = 0;
     int next_id = -1;
-
     while (current != NULL) {
         if (found) {
             next_id = current->job_id;
             break;
         }
-
         if (current->job_id == current_id) {
             found = 1;
         }
-
         current = current->next;
     }
-
     return next_id;
 }

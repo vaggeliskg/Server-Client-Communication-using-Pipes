@@ -15,7 +15,7 @@
 #define SEM_NAME "/server_ready"
 #define ANSWER_FILE "answer"
 
-
+// signal received from commander 
 volatile sig_atomic_t signal_received = 0;
 int Concurrency = 1;
 queue_pointer pendingQueue = NULL;
@@ -29,6 +29,7 @@ int isAnswerActive() {
     }
     return 0; // answer is not active
 }
+
 void signal_handler(int signum) {
     if (signum == SIGCONT) {
         signal_received = 1;
@@ -36,14 +37,12 @@ void signal_handler(int signum) {
 }
 
 int main(int argc, char *argv[]) {
-    // char answer_buf[MAXLEN];
-    // char str[20];
     char answer[100];
     int job_id = 0;
     char* token;
     char* parameter;
 
-    // Get the process ID (PID) of the server
+    // Get the process id of the server
     printf("Server is Turning on\n");
     pid_t server_pid = getpid();
     
@@ -55,7 +54,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Convert the PID to a string
-    char pid_str[20]; // Assuming PID won't exceed 20 characters
+    char pid_str[20]; 
     snprintf(pid_str, sizeof(pid_str), "%d", server_pid);
     
     // Write the PID to the file
@@ -75,6 +74,7 @@ int main(int argc, char *argv[]) {
     }
 
 ////////////////////////////////////////////////////////////////
+    // semaphore for sychronizing the pipe
     sem_t *sem = sem_open(SEM_NAME, O_CREAT, 0666, 0);
     if (sem == SEM_FAILED) {
         perror("sem_open");
@@ -95,13 +95,13 @@ int main(int argc, char *argv[]) {
 
     signal(SIGCONT,signal_handler);
 
+    // while loop waiting to receive a command
     while(1) {
         while (signal_received == 0) {
             ;  // Wait for signal
         }
         signal_received = 0; // Reset the signal flag
         
-        // read test
         int n;
         char buf[400];
 
@@ -126,8 +126,8 @@ int main(int argc, char *argv[]) {
         }
         printf("\nread\n");
 
-        // time for queue - forks etc
 
+        // Handling the commands here
 
         token = strtok(buf, " ");
 
@@ -185,8 +185,6 @@ int main(int argc, char *argv[]) {
                     // sprintf(answer, "%s","end");
                     // send_answer(answer);
                 }
-				// print_running(running_jobs_list, args);
-				// send_response(args);
 			}
 			if (strcmp(parameter, "queued") == 0) {
 				int number2 = count_items(&pendingQueue);
@@ -220,8 +218,6 @@ int main(int argc, char *argv[]) {
                 else {
                     sprintf(answer, "%s","Empty queue");
                     send_answer(answer);
-                    // sprintf(answer, "%s","end");
-                    // send_answer(answer);
                 }
             }
         }
@@ -230,13 +226,9 @@ int main(int argc, char *argv[]) {
             
 			parameter = strtok(NULL, " ");
 			Concurrency = atoi(parameter);
-			/*function to update the queue */
 			updated_Concurrency();
-            // might fix later using sem
             sprintf(answer, "%s %d", "Concurrency set to :", Concurrency);
 			send_answer(answer);
-            // sprintf(answer, "%s","end");
-            // send_answer(answer);
 		}
 
         if(strcmp(token, "stop") == 0) {
@@ -250,10 +242,9 @@ int main(int argc, char *argv[]) {
                 // send_answer(answer);
             }
             else if(delete_item(&pendingQueue,process_id)) {
+                // found in pending queue
                 sprintf(answer,"%s %d", "Removed job with id:",process_id);
                 send_answer(answer);
-                // sprintf(answer, "%s","end");
-                // send_answer(answer);
             }
             else {
                 sprintf(answer,"%s %d", "Did not find job with id:",process_id);

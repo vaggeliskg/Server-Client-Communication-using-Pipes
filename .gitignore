@@ -10,3 +10,4 @@
 !.vscode/*.json
 !*.sh
 !*.txt
+!*.md
