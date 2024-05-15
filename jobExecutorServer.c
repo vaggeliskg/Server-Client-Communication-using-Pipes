@@ -81,9 +81,6 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    printf("about to send\n");
-
-
     // Signal the semaphore to indicate that the server is ready
     if (sem_post(sem) == -1) {
         perror("sem_post");
@@ -120,12 +117,12 @@ int main(int argc, char *argv[]) {
         }
 
         close(fd);
-        size_t len = strlen(buf);
-        for( int i = 0; i < len; i++) {
-            printf("%c",buf[i]);
-        }
-        printf("\nread\n");
+        
+        // size_t len = strlen(buf);
 
+        // for( int i = 0; i < len; i++) {
+        //     printf("%c",buf[i]);
+        // }
 
         // Handling the commands here
 
@@ -278,7 +275,6 @@ int main(int argc, char *argv[]) {
 
 void send_answer(string answer) {
 	int pipe;
-    printf("in write\n");
 	if( (pipe=open(ANSWER_FILE, O_WRONLY)) < 0) {
 		perror("server writing: fifo open error");
 		exit(1);
@@ -291,7 +287,6 @@ void send_answer(string answer) {
     if (write(pipe, answer, strlen(answer) + 1) < 0) {
         printf("error in write");
     }
-    printf("in server: %s\n", answer);
 
     // if(flag) {
     //     string end = "end";
