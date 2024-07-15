@@ -15,7 +15,6 @@
 #define SEM_NAME "/server_ready"
 #define ANSWER_FILE "answer"
 
-
 int isServerActive() {
     int fd2 = open(SERVER_FILE, O_RDONLY);
     if (fd2 != -1) {
