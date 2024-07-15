@@ -302,6 +302,6 @@ void send_answer(string answer) {
     //             exit(2);
     //     }
     //     printf("lalaloupsi\n");
-    // }
+    //// }
 	close(pipe);
 }
