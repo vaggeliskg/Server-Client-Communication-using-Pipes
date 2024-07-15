@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < delay; i++) {
         sleep(1);
         //printf("$");
-        //printf("Start time: %s", ctime(&start_time)); // Print starting time
+        //printf("Start time: %s", ctime(&start_time)); // Print starting time!
         fflush(stdout);
     }
     printf("\n");
