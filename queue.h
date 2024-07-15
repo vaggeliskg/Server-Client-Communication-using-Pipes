@@ -1,7 +1,6 @@
 // queue.c header file
 #include <sys/types.h>
 
-
 typedef struct node* queue_pointer;
 typedef char* string;
 
