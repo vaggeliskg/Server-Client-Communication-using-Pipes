@@ -13,7 +13,6 @@
 
 
 
-
 void job_handler(int sig);
 
 void split_command(char *command, char **args, int max_args);
